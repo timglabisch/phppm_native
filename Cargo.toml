@@ -1,0 +1,7 @@
+[package]
+name = "phppm"
+version = "0.1.0"
+authors = ["timglabisch <tim@ainfach.de>"]
+
+[dependencies]
+clap = "2.10.0"
