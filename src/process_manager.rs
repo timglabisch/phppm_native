@@ -25,7 +25,7 @@ impl<'a, O> ProcessManager<'a, O> where O : OutputTrait {
         port : usize,
         host : String,
         slave_count : usize
-    ) -> ProcessManager<'a, &'a O> {
+    ) -> ProcessManager<&'a O> {
         ProcessManager {
             output : output,
             wait_for_slaves : true,
