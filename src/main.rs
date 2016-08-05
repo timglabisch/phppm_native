@@ -1,7 +1,11 @@
 extern crate clap;
 mod config;
+mod output;
+mod process_manager;
 use clap::{Arg, App};
 use config::Config;
+use process_manager::ProcessManager;
+use output::{OutputConsole, OutputTrait};
 
 fn main() {
 
@@ -34,10 +38,15 @@ fn main() {
 
     let config = Config {
         working_directory: matches.value_of("working-directory").unwrap_or("./").to_string(),
-        port: matches.value_of("port").unwrap_or("8080").to_string(),
+        host: matches.value_of("host").unwrap_or("127.0.0.1").to_string(),
+        port: matches.value_of("port").unwrap_or("8080").parse::<usize>().expect("port must be a positive number"),
         workers: matches.value_of("workers").unwrap_or("8").parse::<usize>().expect("workers must be a positive number")
     };
 
     println!("Starting PHPPHM (Native)\n");
     println!("Configuration: {:#?}\n", config);
+
+    let output = OutputConsole::new();
+
+    let process_manager = ProcessManager::new(&output, config.port, config.host, config.workers);
 }
