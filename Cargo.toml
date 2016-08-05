@@ -6,3 +6,4 @@ authors = ["timglabisch <tim@ainfach.de>"]
 [dependencies]
 clap = "2.10.0"
 mio = "0.5.1"
+rotor-http = "0.7.0"

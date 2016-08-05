@@ -71,8 +71,8 @@ impl<'a, O> ProcessManager<'a, O> where O : OutputTrait {
             ::mio::PollOpt::all()
         );
 
-        println!("running pingpong server");
-        event_loop.run(&mut ControllerHandler { server: controller_listener });
-
+        event_loop.run(&mut ControllerHandler {
+            server: controller_listener
+        });
     }
 }
