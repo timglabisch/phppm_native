@@ -1,11 +1,16 @@
 extern crate clap;
+extern crate mio;
 mod config;
 mod output;
 mod process_manager;
+mod controller;
 use clap::{Arg, App};
 use config::Config;
 use process_manager::ProcessManager;
 use output::{OutputConsole, OutputTrait};
+use controller::ControllerHandler;
+
+const SERVER: ::mio::Token = ::mio::Token(0);
 
 fn main() {
 
@@ -49,4 +54,5 @@ fn main() {
     let output = OutputConsole::new();
 
     let process_manager = ProcessManager::new(&output, config.port, config.host, config.workers);
+    process_manager.run();
 }

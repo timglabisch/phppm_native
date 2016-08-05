@@ -1,4 +1,7 @@
 use output::OutputTrait;
+use mio::tcp::*;
+use ::SERVER;
+use controller::ControllerHandler;
 
 pub struct ProcessManager<'a, O : 'a> {
     output : &'a O,
@@ -50,11 +53,26 @@ impl<'a, O> ProcessManager<'a, O> where O : OutputTrait {
         // mio for onSlaveConnection
         // mio for onWeb
 
+
+        let controller_address = "0.0.0.0:5500".parse().unwrap();
+        let controller_listener = TcpListener::bind(&controller_address).unwrap();
+
         self.output.writeln(&format!(
             "Starting PHP-PM (Native) with {} workers, using {} ...",
             self.slave_count,
             "[LOOP CLASS]"
         ));
+
+        let mut event_loop = ::mio::EventLoop::new().unwrap();
+        event_loop.register(
+            &controller_listener,
+            SERVER,
+            ::mio::EventSet::all(),
+            ::mio::PollOpt::all()
+        );
+
+        println!("running pingpong server");
+        event_loop.run(&mut ControllerHandler { server: controller_listener });
 
     }
 }
