@@ -1,9 +1,11 @@
 extern crate clap;
 extern crate mio;
+extern crate bytes;
 mod config;
 mod output;
 mod process_manager;
 mod controller;
+mod connection;
 use clap::{Arg, App};
 use config::Config;
 use process_manager::ProcessManager;

@@ -1,10 +1,22 @@
 use mio::tcp::*;
 use mio::util::Slab;
 use ::SERVER;
+use connection::Connection;
 
 pub struct ControllerHandler {
     pub server: TcpListener,
+    pub connections : Slab<Connection>
 }
+
+impl ControllerHandler {
+    pub fn new(server : TcpListener) -> ControllerHandler {
+        ControllerHandler {
+            server: server,
+            connections: Slab::new_starting_at(::mio::Token(1), 1024)
+        }
+    }
+}
+
 
 impl ::mio::Handler for ControllerHandler {
     type Timeout = ();
@@ -26,7 +38,21 @@ impl ::mio::Handler for ControllerHandler {
                 match self.server.accept() {
                     Ok(Some(socket)) => {
                         println!("accepted a socket, exiting program");
-                        event_loop.shutdown();
+
+                        let stream = socket.0;
+
+                        let connection = self
+                            .connections
+                            .insert_with(|connection| Connection::new(stream, connection))
+                            .expect("failed to handle connection, increase slab size?");
+
+                        event_loop.register(
+                            &self.connections[connection].stream,
+                            connection,
+                            ::mio::EventSet::readable(),
+                            ::mio::PollOpt::edge() | ::mio::PollOpt::oneshot()
+                        ).expect("cant register socket on event loop");
+                        //event_loop.shutdown();
                     }
                     Ok(None) => {
                         println!("the server socket wasn't actually ready");

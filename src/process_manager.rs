@@ -89,8 +89,6 @@ impl<'a, O> ProcessManager<'a, O> where O : OutputTrait {
 
         println!("loop!");
 
-        event_loop.run(&mut ControllerHandler {
-            server: controller_listener
-        });
+        event_loop.run(&mut ControllerHandler::new(controller_listener));
     }
 }
