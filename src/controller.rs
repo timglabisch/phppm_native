@@ -1,4 +1,5 @@
 use mio::tcp::*;
+use mio::util::Slab;
 use ::SERVER;
 
 pub struct ControllerHandler {
@@ -21,6 +22,7 @@ impl ::mio::Handler for ControllerHandler {
                 assert!(events.is_readable());
 
                 println!("the server socket is ready to accept a connection");
+                // http://rustdoc.s3-website-us-east-1.amazonaws.com/mio/v0.5.x/mio/tcp/struct.TcpListener.html#method.accept
                 match self.server.accept() {
                     Ok(Some(socket)) => {
                         println!("accepted a socket, exiting program");

@@ -53,6 +53,6 @@ fn main() {
 
     let output = OutputConsole::new();
 
-    let process_manager = ProcessManager::new(&output, config.port, config.host, config.workers);
+    let process_manager = ProcessManager::new(&output, &config);
     process_manager.run();
 }

@@ -2,6 +2,11 @@ use output::OutputTrait;
 use mio::tcp::*;
 use ::SERVER;
 use controller::ControllerHandler;
+use std::fs::File;
+use std::io::prelude::*;
+use std::process::{Command, Stdio};
+use std::env;
+use config::Config;
 
 pub struct ProcessManager<'a, O : 'a> {
     output : &'a O,
@@ -17,17 +22,13 @@ pub struct ProcessManager<'a, O : 'a> {
     handled_requests : u32,
     max_reqests : u32,
     timeout : i32,
-    port : usize,
-    host : String,
-    slave_count : usize
+    config : &'a Config
 }
 
 impl<'a, O> ProcessManager<'a, O> where O : OutputTrait {
     pub fn new(
         output : &'a O,
-        port : usize,
-        host : String,
-        slave_count : usize
+        config : &'a Config
     ) -> ProcessManager<'a, O> {
         ProcessManager {
             output : output,
@@ -43,9 +44,7 @@ impl<'a, O> ProcessManager<'a, O> where O : OutputTrait {
             handled_requests : 0,
             max_reqests : 2000,
             timeout : 30,
-            port : port,
-            host : host,
-            slave_count : slave_count,
+            config : config
         }
     }
 
@@ -59,7 +58,7 @@ impl<'a, O> ProcessManager<'a, O> where O : OutputTrait {
 
         self.output.writeln(&format!(
             "Starting PHP-PM (Native) with {} workers, using {} ...",
-            self.slave_count,
+            self.config.workers,
             "[LOOP CLASS]"
         ));
 
@@ -70,6 +69,25 @@ impl<'a, O> ProcessManager<'a, O> where O : OutputTrait {
             ::mio::EventSet::all(),
             ::mio::PollOpt::all()
         );
+
+        let slave_file_content = format!(
+            include_str!("slave.php"),
+            slave_port=5501,
+            bootstrap="",
+            bridge="",
+            dir=self.config.working_directory
+        );
+
+        let mut file = File::create("/tmp/phppm_slave1").expect("failed to create /tmp/phppm_slave1");
+        file.write_all(slave_file_content.as_bytes());
+
+        Command::new("/Users/tim/.phpbrew/php/php-7.0.9/bin/php")
+        .arg("/tmp/phppm_slave1")
+        .stderr(Stdio::null())
+        .spawn()
+        .expect("php command failed to start");
+
+        println!("loop!");
 
         event_loop.run(&mut ControllerHandler {
             server: controller_listener
