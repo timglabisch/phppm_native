@@ -62,8 +62,13 @@ impl ::mio::Handler for ControllerHandler {
                         event_loop.shutdown();
                     }
                 }
+            },
+            _ => match self.connections.get(token) {
+                Some(connection) => {
+                    panic!("i've go a connection!")
+                },
+                None => panic!("Received unknown token")
             }
-            _ => panic!("Received unknown token"),
         }
     }
 }
